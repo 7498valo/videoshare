@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — Voice & Screen</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c12;
+    --surface: #0d1520;
+    --surface2: #121e2e;
+    --border: rgba(0,200,255,0.12);
+    --accent: #00c8ff;
+    --accent2: #00ff9d;
+    --danger: #ff3b5c;
+    --warn: #ffb800;
+    --text: #e8f4ff;
+    --muted: #4a6a8a;
+    --glow: 0 0 20px rgba(0,200,255,0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(0,200,255,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 80%, rgba(0,255,157,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── GRID NOISE ─── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; }
+
+  /* ─── AUTH ─── */
+  #auth-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3rem 2.5rem;
+    box-shadow: 0 0 60px rgba(0,200,255,0.08), 0 40px 80px rgba(0,0,0,0.5);
+    animation: fadeUp 0.6s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2.5rem;
+  }
+
+  .logo-icon {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+
+  .logo-text {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .auth-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .auth-sub {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+  }
+
+  .tab-row {
+    display: flex;
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 2rem;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn.active {
+    background: var(--surface2);
+    color: var(--accent);
+  }
+
+  .field {
+    margin-bottom: 1.2rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,200,255,0.1);
+  }
+
+  .btn {
+    width: 100%;
+    padding: 0.85rem;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #0099dd);
+    color: #000;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,200,255,0.35);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  .msg { 
+    margin-top: 1rem; 
+    font-size: 0.82rem; 
+    text-align: center;
+    padding: 0.6rem;
+    border-radius: 8px;
+  }
+  .msg.error { background: rgba(255,59,92,0.1); color: var(--danger); }
+  .msg.success { background: rgba(0,255,157,0.1); color: var(--accent2); }
+
+  /* ─── APP ─── */
+  #app-screen { display: none; min-height: 100vh; }
+
+  .app-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: 60px 1fr;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .topbar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .topbar-logo { display: flex; align-items: center; gap: 8px; }
+  .topbar-logo .logo-text { font-size: 1.1rem; }
+
+  .topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .avatar {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: #000;
+  }
+
+  .user-name { font-weight: 600; font-size: 0.9rem; }
+
+  .btn-logout {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.3rem 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .sidebar-section-title {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .my-id-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+  }
+
+  .my-id-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; margin-bottom: 0.4rem; }
+
+  .my-id-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent2);
+    word-break: break-all;
+    cursor: pointer;
+  }
+
+  .my-id-val:hover { opacity: 0.7; }
+
+  .copy-hint { font-size: 0.65rem; color: var(--muted); margin-top: 4px; }
+
+  .connect-box { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .connect-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  .connect-input:focus { border-color: var(--accent); }
+
+  .btn-connect {
+    background: linear-gradient(135deg, var(--accent), #0099dd);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-connect:hover { box-shadow: 0 4px 15px rgba(0,200,255,0.3); }
+
+  /* Peers list */
+  .peers-list { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+
+  .peer-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    font-size: 0.82rem;
+    transition: all 0.2s;
+  }
+
+  .peer-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: 0 0 6px var(--accent2);
+    flex-shrink: 0;
+  }
+
+  .peer-name { flex: 1; font-weight: 600; font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .btn-disconnect {
+    background: none;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 0.8rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    padding: 2px 4px;
+  }
+  .btn-disconnect:hover { opacity: 1; }
+
+  .empty-peers {
+    color: var(--muted);
+    font-size: 0.78rem;
+    text-align: center;
+    padding: 1rem;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+
+  /* Main area */
+  .main-area {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1.5rem;
+    overflow-y: auto;
+  }
+
+  /* Controls */
+  .controls-bar {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .ctrl-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.7rem 1.2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .ctrl-btn:hover { border-color: var(--accent); box-shadow: var(--glow); }
+
+  .ctrl-btn.active {
+    background: linear-gradient(135deg, var(--accent), #0099dd);
+    color: #000;
+    border-color: transparent;
+    box-shadow: 0 4px 20px rgba(0,200,255,0.3);
+  }
+
+  .ctrl-btn.danger { border-color: rgba(255,59,92,0.3); }
+  .ctrl-btn.danger.active { background: linear-gradient(135deg, var(--danger), #cc0033); color: #fff; box-shadow: 0 4px 20px rgba(255,59,92,0.3); }
+
+  .ctrl-icon { font-size: 1.1rem; }
+
+  /* Volume meter */
+  .volume-meter {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    height: 20px;
+  }
+
+  .vol-bar {
+    width: 4px;
+    background: var(--accent2);
+    border-radius: 2px;
+    transition: height 0.08s;
+    min-height: 3px;
+  }
+
+  /* Screen share area */
+  .screen-area {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .screen-placeholder {
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .screen-placeholder .ph-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .screen-placeholder h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .screen-placeholder p { font-size: 0.82rem; }
+
+  #screen-video, #remote-screen-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: none;
+  }
+
+  .screen-label {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-transform: uppercase;
+    display: none;
+  }
+
+  /* Remote audio */
+  audio { display: none; }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+  .status-dot.connected { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+  .status-dot.connecting { background: var(--warn); animation: pulse 1s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.85rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    transform: translateX(200%);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 100;
+    max-width: 300px;
+  }
+  .notification.show { transform: translateX(0); }
+  .notification.success { border-color: rgba(0,255,157,0.3); }
+  .notification.error { border-color: rgba(255,59,92,0.3); }
+
+  /* Mute indicator */
+  .mute-banner {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,59,92,0.1);
+    border: 1px solid rgba(255,59,92,0.2);
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+    color: var(--danger);
+    font-weight: 600;
+  }
+  .mute-banner.visible { display: flex; }
+
+  .peers-section { flex: 1; overflow-y: auto; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  @media (max-width: 700px) {
+    .app-layout { grid-template-columns: 1fr; grid-template-rows: 60px auto 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen" class="page">
+  <div class="auth-card">
+    <div class="logo">
+      <div class="logo-icon">📡</div>
+      <span class="logo-text">NEXUS</span>
+    </div>
+    <div class="auth-title">Welcome back</div>
+    <div class="auth-sub">Voice chat & screen sharing platform</div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('login')">ログイン</button>
+      <button class="tab-btn" onclick="switchTab('register')">新規登録</button>
+    </div>
+
+    <div id="login-form">
+      <div class="field"><label>ユーザー名</label><input type="text" id="login-user" placeholder="username" autocomplete="username"></div>
+      <div class="field"><label>パスワード</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-primary" onclick="login()">ログイン →</button>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <div class="field"><label>ユーザー名</label><input type="text" id="reg-user" placeholder="username" autocomplete="username"></div>
+      <div class="field"><label>表示名</label><input type="text" id="reg-display" placeholder="表示名"></div>
+      <div class="field"><label>パスワード</label><input type="password" id="reg-pass" placeholder="••••••••" autocomplete="new-password"></div>
+      <div class="field"><label>パスワード確認</label><input type="password" id="reg-pass2" placeholder="••••••••" autocomplete="new-password"></div>
+      <button class="btn btn-primary" onclick="register()">アカウント作成 →</button>
+    </div>
+
+    <div id="auth-msg"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" class="page">
+  <div class="app-layout">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-logo">
+        <div class="logo-icon" style="width:30px;height:30px;font-size:14px;border-radius:8px;">📡</div>
+        <span class="logo-text">NEXUS</span>
+      </div>
+      <div class="status-bar">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">初期化中...</span>
+      </div>
+      <div class="topbar-user">
+        <div class="avatar" id="user-avatar">?</div>
+        <span class="user-name" id="user-display"></span>
+        <button class="btn-logout" onclick="logout()">ログアウト</button>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+      <div>
+        <div class="sidebar-section-title">あなたのID</div>
+        <div class="my-id-box">
+          <div class="my-id-label">Peer ID</div>
+          <div class="my-id-val" id="my-peer-id" onclick="copyId()">生成中...</div>
+          <div class="copy-hint">クリックでコピー</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-title">接続</div>
+        <div class="connect-box">
+          <input class="connect-input" id="remote-id-input" placeholder="相手のPeer IDを入力...">
+          <button class="btn-connect" onclick="connectToPeer()">接続する →</button>
+        </div>
+      </div>
+
+      <div class="peers-section">
+        <div class="sidebar-section-title">接続中のユーザー</div>
+        <div class="peers-list" id="peers-list">
+          <div class="empty-peers">まだ誰も接続していません</div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Main -->
+    <main class="main-area">
+
+      <div class="controls-bar">
+        <button class="ctrl-btn" id="mic-btn" onclick="toggleMic()">
+          <span class="ctrl-icon">🎤</span> ミュート解除
+        </button>
+        <button class="ctrl-btn danger" id="deafen-btn" onclick="toggleDeafen()">
+          <span class="ctrl-icon">🔇</span> スピーカー
+        </button>
+        <button class="ctrl-btn" id="screen-btn" onclick="toggleScreenShare()">
+          <span class="ctrl-icon">🖥️</span> 画面共有
+        </button>
+        <div class="volume-meter" id="vol-meter">
+          <div class="vol-bar" style="height:3px" id="vb1"></div>
+          <div class="vol-bar" style="height:3px" id="vb2"></div>
+          <div class="vol-bar" style="height:3px" id="vb3"></div>
+          <div class="vol-bar" style="height:3px" id="vb4"></div>
+          <div class="vol-bar" style="height:3px" id="vb5"></div>
+        </div>
+      </div>
+
+      <div class="mute-banner" id="mute-banner">
+        🔇 マイクがミュートされています
+      </div>
+
+      <div class="screen-area" id="screen-area">
+        <div class="screen-placeholder" id="screen-placeholder">
+          <div class="ph-icon">🖥️</div>
+          <h3>画面共有なし</h3>
+          <p>「画面共有」ボタンで共有を開始するか<br>相手の共有を待ちます</p>
+        </div>
+        <video id="screen-video" autoplay muted playsinline></video>
+        <video id="remote-screen-video" autoplay playsinline></video>
+        <div class="screen-label" id="screen-label">● LIVE</div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<audio id="remote-audio" autoplay></audio>
+<div class="notification" id="notification"></div>
+
+<script>
+// ─── Storage helpers ───────────────────────────────────────────────
+const DB = {
+  get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set: (k,v) => localStorage.setItem(k, JSON.stringify(v)),
+  del: (k) => localStorage.removeItem(k),
+};
+
+// ─── Auth ──────────────────────────────────────────────────────────
+let currentUser = null;
+
+function getUsers() { return DB.get('nexus_users') || {}; }
+function saveUsers(u) { DB.set('nexus_users', u); }
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (tab==='login')?i===0:i===1));
+  document.getElementById('login-form').style.display = tab==='login'?'':'none';
+  document.getElementById('register-form').style.display = tab==='register'?'':'none';
+  document.getElementById('auth-msg').innerHTML = '';
+}
+
+function showMsg(text, type='error') {
+  document.getElementById('auth-msg').innerHTML = `<div class="msg ${type}">${text}</div>`;
+}
+
+function login() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (!u || !p) return showMsg('ユーザー名とパスワードを入力してください');
+  const users = getUsers();
+  if (!users[u]) return showMsg('ユーザーが見つかりません');
+  if (users[u].password !== hashPass(p)) return showMsg('パスワードが正しくありません');
+  currentUser = { username: u, display: users[u].display };
+  DB.set('nexus_session', currentUser);
+  startApp();
+}
+
+function register() {
+  const u = document.getElementById('reg-user').value.trim();
+  const d = document.getElementById('reg-display').value.trim() || u;
+  const p = document.getElementById('reg-pass').value;
+  const p2 = document.getElementById('reg-pass2').value;
+  if (!u || !p) return showMsg('全フィールドを入力してください');
+  if (p !== p2) return showMsg('パスワードが一致しません');
+  if (p.length < 6) return showMsg('パスワードは6文字以上にしてください');
+  if (!/^[a-zA-Z0-9_]+$/.test(u)) return showMsg('ユーザー名は英数字とアンダーバーのみ使用可能です');
+  const users = getUsers();
+  if (users[u]) return showMsg('このユーザー名は既に使われています');
+  users[u] = { password: hashPass(p), display: d };
+  saveUsers(users);
+  showMsg('アカウントを作成しました！', 'success');
+  setTimeout(() => switchTab('login'), 1200);
+}
+
+function hashPass(p) {
+  // Simple hash (not for production use)
+  let h = 0;
+  for (let i = 0; i < p.length; i++) { h = Math.imul(31, h) + p.charCodeAt(i) | 0; }
+  return h.toString(16);
+}
+
+function logout() {
+  DB.del('nexus_session');
+  cleanupPeer();
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  currentUser = null;
+}
+
+// ─── WebRTC / PeerJS ───────────────────────────────────────────────
+let peer = null;
+let connections = {}; // peerId -> { conn, call, screenCall }
+let localStream = null;
+let screenStream = null;
+let isMuted = true;
+let isDeafened = false;
+let isScreenSharing = false;
+let audioContext = null;
+let analyser = null;
+let volAnimId = null;
+
+function startApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'flex';
+
+  const d = currentUser.display;
+  document.getElementById('user-display').textContent = d;
+  document.getElementById('user-avatar').textContent = d[0].toUpperCase();
+
+  setStatus('connecting');
+  initPeer();
+}
+
+function initPeer() {
+  if (peer) peer.destroy();
+  // Use PeerJS default cloud server
+  peer = new Peer(undefined, {
+    debug: 0,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ]
+    }
+  });
+
+  peer.on('open', (id) => {
+    document.getElementById('my-peer-id').textContent = id;
+    setStatus('connected', `接続済み — ID: ${id.slice(0,8)}...`);
+    notify('📡 サーバーに接続しました', 'success');
+  });
+
+  peer.on('connection', (conn) => {
+    handleConnection(conn);
+  });
+
+  peer.on('call', (call) => {
+    handleIncomingCall(call);
+  });
+
+  peer.on('error', (err) => {
+    setStatus('disconnected', 'エラー: ' + err.message);
+    notify('❌ ' + err.message, 'error');
+  });
+
+  peer.on('disconnected', () => {
+    setStatus('connecting', '再接続中...');
+    peer.reconnect();
+  });
+}
+
+function handleConnection(conn) {
+  const pid = conn.peer;
+  if (!connections[pid]) connections[pid] = {};
+  connections[pid].conn = conn;
+
+  conn.on('open', () => {
+    conn.send({ type: 'hello', display: currentUser.display });
+  });
+
+  conn.on('data', (data) => {
+    if (data.type === 'hello') {
+      connections[pid].display = data.display;
+      addPeerUI(pid, data.display);
+      notify(`👤 ${data.display} が接続しました`, 'success');
+    }
+  });
+
+  conn.on('close', () => {
+    removePeerUI(pid);
+    delete connections[pid];
+    notify(`👤 切断されました`, '');
+  });
+
+  conn.on('error', (e) => console.warn(e));
+}
+
+function handleIncomingCall(call) {
+  const pid = call.peer;
+  if (!connections[pid]) connections[pid] = {};
+
+  if (call.metadata && call.metadata.type === 'screen') {
+    call.answer();
+    call.on('stream', (stream) => {
+      showRemoteScreen(stream);
+    });
+    connections[pid].remoteScreenCall = call;
+    call.on('close', () => hideRemoteScreen());
+  } else {
+    // Voice call
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+      .then((stream) => {
+        localStream = stream;
+        applyMuteState();
+        call.answer(stream);
+        call.on('stream', (remoteStream) => {
+          playRemoteAudio(remoteStream);
+        });
+        connections[pid].call = call;
+        setupVolumeAnalyser(stream);
+      })
+      .catch(() => {
+        call.answer();
+        call.on('stream', (remoteStream) => playRemoteAudio(remoteStream));
+        connections[pid].call = call;
+      });
+  }
+
+  call.on('error', (e) => console.warn(e));
+}
+
+function connectToPeer() {
+  const remoteId = document.getElementById('remote-id-input').value.trim();
+  if (!remoteId) return notify('Peer IDを入力してください', 'error');
+  if (remoteId === peer.id) return notify('自分のIDには接続できません', 'error');
+  if (connections[remoteId]) return notify('すでに接続中です', 'error');
+
+  notify('🔗 接続中...', '');
+
+  // Data connection
+  const conn = peer.connect(remoteId, { reliable: true });
+  if (!connections[remoteId]) connections[remoteId] = {};
+  connections[remoteId].conn = conn;
+
+  conn.on('open', () => {
+    conn.send({ type: 'hello', display: currentUser.display });
+
+    // Voice call
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+      .then((stream) => {
+        localStream = stream;
+        applyMuteState();
+        const call = peer.call(remoteId, stream);
+        connections[remoteId].call = call;
+        call.on('stream', (remoteStream) => {
+          playRemoteAudio(remoteStream);
+        });
+        setupVolumeAnalyser(stream);
+        notify('🎤 ボイスチャットに参加しました', 'success');
+      })
+      .catch(() => {
+        notify('⚠️ マイクへのアクセスが拒否されました', 'error');
+      });
+  });
+
+  conn.on('data', (data) => {
+    if (data.type === 'hello') {
+      connections[remoteId].display = data.display;
+      addPeerUI(remoteId, data.display);
+      notify(`👤 ${data.display} と接続しました`, 'success');
+      document.getElementById('remote-id-input').value = '';
+    }
+  });
+
+  conn.on('close', () => { removePeerUI(remoteId); delete connections[remoteId]; });
+  conn.on('error', (e) => notify('接続エラー: ' + e, 'error'));
+}
+
+// ─── Audio ─────────────────────────────────────────────────────────
+function playRemoteAudio(stream) {
+  const audio = document.getElementById('remote-audio');
+  audio.srcObject = stream;
+  if (isDeafened) audio.muted = true;
+}
+
+function applyMuteState() {
+  if (!localStream) return;
+  localStream.getAudioTracks().forEach(t => { t.enabled = !isMuted; });
+  document.getElementById('mute-banner').classList.toggle('visible', isMuted);
+}
+
+function toggleMic() {
+  if (!localStream) {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then((stream) => {
+        localStream = stream;
+        isMuted = false;
+        applyMuteState();
+        updateMicBtn();
+        setupVolumeAnalyser(stream);
+        // Share with existing connections
+        Object.keys(connections).forEach(pid => {
+          if (!connections[pid].call) {
+            const call = peer.call(pid, stream);
+            connections[pid].call = call;
+            call.on('stream', (rs) => playRemoteAudio(rs));
+          }
+        });
+      })
+      .catch(() => notify('マイクへのアクセスが拒否されました', 'error'));
+    return;
+  }
+  isMuted = !isMuted;
+  applyMuteState();
+  updateMicBtn();
+}
+
+function updateMicBtn() {
+  const btn = document.getElementById('mic-btn');
+  if (isMuted) {
+    btn.classList.remove('active');
+    btn.innerHTML = '<span class="ctrl-icon">🎤</span> ミュート解除';
+  } else {
+    btn.classList.add('active');
+    btn.innerHTML = '<span class="ctrl-icon">🎙️</span> ミュート中';
+  }
+}
+
+function toggleDeafen() {
+  isDeafened = !isDeafened;
+  document.getElementById('remote-audio').muted = isDeafened;
+  const btn = document.getElementById('deafen-btn');
+  btn.classList.toggle('active', isDeafened);
+  btn.innerHTML = isDeafened
+    ? '<span class="ctrl-icon">🔕</span> ミュート中'
+    : '<span class="ctrl-icon">🔇</span> スピーカー';
+}
+
+function setupVolumeAnalyser(stream) {
+  if (audioContext) { audioContext.close(); }
+  if (volAnimId) cancelAnimationFrame(volAnimId);
+
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 256;
+  const src = audioContext.createMediaStreamSource(stream);
+  src.connect(analyser);
+
+  const bars = ['vb1','vb2','vb3','vb4','vb5'].map(id => document.getElementById(id));
+  const data = new Uint8Array(analyser.frequencyBinCount);
+
+  function draw() {
+    volAnimId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(data);
+    if (isMuted) { bars.forEach(b => b.style.height = '3px'); return; }
+    const avg = data.slice(0, 40).reduce((a,b)=>a+b,0)/40;
+    bars.forEach((b, i) => {
+      const h = Math.max(3, (avg / 255) * 20 * (0.5 + Math.random() * 0.5));
+      b.style.height = h + 'px';
+    });
+  }
+  draw();
+}
+
+// ─── Screen Share ──────────────────────────────────────────────────
+async function toggleScreenShare() {
+  if (isScreenSharing) {
+    stopScreenShare();
+    return;
+  }
+
+  try {
+    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    isScreenSharing = true;
+
+    const vid = document.getElementById('screen-video');
+    vid.srcObject = screenStream;
+    vid.style.display = 'block';
+    document.getElementById('screen-placeholder').style.display = 'none';
+    document.getElementById('screen-label').style.display = 'block';
+    document.getElementById('screen-label').textContent = '● 自分の画面';
+
+    document.getElementById('screen-btn').classList.add('active');
+    document.getElementById('screen-btn').innerHTML = '<span class="ctrl-icon">🛑</span> 共有停止';
+
+    // Share with all connected peers
+    Object.keys(connections).forEach(pid => {
+      const call = peer.call(pid, screenStream, { metadata: { type: 'screen' } });
+      connections[pid].screenCall = call;
+    });
+
+    screenStream.getVideoTracks()[0].addEventListener('ended', () => {
+      stopScreenShare();
+    });
+
+    notify('🖥️ 画面共有を開始しました', 'success');
+  } catch (e) {
+    if (e.name !== 'NotAllowedError') notify('画面共有に失敗しました', 'error');
+  }
+}
+
+function stopScreenShare() {
+  if (screenStream) {
+    screenStream.getTracks().forEach(t => t.stop());
+    screenStream = null;
+  }
+
+  Object.keys(connections).forEach(pid => {
+    if (connections[pid].screenCall) {
+      connections[pid].screenCall.close();
+      delete connections[pid].screenCall;
+    }
+  });
+
+  isScreenSharing = false;
+  const vid = document.getElementById('screen-video');
+  vid.srcObject = null;
+  vid.style.display = 'none';
+  document.getElementById('screen-placeholder').style.display = 'block';
+  document.getElementById('screen-label').style.display = 'none';
+  document.getElementById('screen-btn').classList.remove('active');
+  document.getElementById('screen-btn').innerHTML = '<span class="ctrl-icon">🖥️</span> 画面共有';
+
+  // Check if remote screen is still showing
+  const remVid = document.getElementById('remote-screen-video');
+  if (!remVid.srcObject) {
+    document.getElementById('screen-placeholder').style.display = 'block';
+  }
+  notify('🖥️ 画面共有を停止しました', '');
+}
+
+function showRemoteScreen(stream) {
+  const vid = document.getElementById('remote-screen-video');
+  vid.srcObject = stream;
+  vid.style.display = 'block';
+  document.getElementById('screen-video').style.display = 'none';
+  document.getElementById('screen-placeholder').style.display = 'none';
+  document.getElementById('screen-label').style.display = 'block';
+  document.getElementById('screen-label').textContent = '● 相手の画面';
+  notify('🖥️ 相手が画面共有を開始しました', 'success');
+}
+
+function hideRemoteScreen() {
+  const vid = document.getElementById('remote-screen-video');
+  vid.srcObject = null;
+  vid.style.display = 'none';
+  if (!isScreenSharing) {
+    document.getElementById('screen-placeholder').style.display = 'block';
+    document.getElementById('screen-label').style.display = 'none';
+  }
+}
+
+// ─── Peer UI ───────────────────────────────────────────────────────
+function addPeerUI(pid, display) {
+  const list = document.getElementById('peers-list');
+  const existing = document.querySelector('.empty-peers');
+  if (existing) existing.remove();
+
+  const el = document.createElement('div');
+  el.className = 'peer-item';
+  el.id = 'peer-' + pid.replace(/[^a-z0-9]/gi,'_');
+  el.innerHTML = `
+    <div class="peer-dot"></div>
+    <span class="peer-name" title="${pid}">${display}</span>
+    <button class="btn-disconnect" onclick="disconnectPeer('${pid}')" title="切断">✕</button>
+  `;
+  list.appendChild(el);
+}
+
+function removePeerUI(pid) {
+  const el = document.getElementById('peer-' + pid.replace(/[^a-z0-9]/gi,'_'));
+  if (el) el.remove();
+  const list = document.getElementById('peers-list');
+  if (!list.children.length) {
+    list.innerHTML = '<div class="empty-peers">まだ誰も接続していません</div>';
+  }
+}
+
+function disconnectPeer(pid) {
+  if (connections[pid]) {
+    if (connections[pid].conn) connections[pid].conn.close();
+    if (connections[pid].call) connections[pid].call.close();
+    if (connections[pid].screenCall) connections[pid].screenCall.close();
+    delete connections[pid];
+  }
+  removePeerUI(pid);
+  notify('切断しました', '');
+}
+
+function cleanupPeer() {
+  if (localStream) { localStream.getTracks().forEach(t=>t.stop()); localStream = null; }
+  if (screenStream) { screenStream.getTracks().forEach(t=>t.stop()); screenStream = null; }
+  if (peer) { peer.destroy(); peer = null; }
+  if (audioContext) { audioContext.close(); audioContext = null; }
+  if (volAnimId) { cancelAnimationFrame(volAnimId); volAnimId = null; }
+  connections = {};
+}
+
+// ─── Utilities ─────────────────────────────────────────────────────
+function setStatus(state, text) {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  dot.className = 'status-dot ' + (state === 'connected' ? 'connected' : state === 'connecting' ? 'connecting' : '');
+  txt.textContent = text || (state === 'connected' ? '接続済み' : state === 'connecting' ? '接続中...' : '切断');
+}
+
+let notifTimeout;
+function notify(msg, type) {
+  const el = document.getElementById('notification');
+  el.textContent = msg;
+  el.className = 'notification show ' + (type || '');
+  clearTimeout(notifTimeout);
+  notifTimeout = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function copyId() {
+  const id = document.getElementById('my-peer-id').textContent;
+  navigator.clipboard.writeText(id).then(() => notify('📋 IDをコピーしました', 'success'));
+}
+
+// Enter key for connect
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && document.activeElement.id === 'remote-id-input') connectToPeer();
+  if (e.key === 'Enter' && document.activeElement.id === 'login-pass') login();
+  if (e.key === 'Enter' && document.activeElement.id === 'reg-pass2') register();
+});
+
+// ─── Init ──────────────────────────────────────────────────────────
+(function init() {
+  const session = DB.get('nexus_session');
+  if (session) {
+    currentUser = session;
+    startApp();
+  }
+})();
+</script>
+</body>
+</html>
