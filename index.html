@@ -908,7 +908,14 @@ const DB = {
 // ─── Auth ──────────────────────────────────────────────────────────
 let currentUser = null;
 
-function getUsers() { return DB.get('nexus_users') || []; }
+function getUsers() {
+  const data = DB.get('nexus_users');
+  // Handle both old object format and new array format
+  if (Array.isArray(data)) return data;
+  if (data === null || data === undefined) return [];
+  // Convert old object format to array
+  return Object.keys(data);
+}
 function saveUsers(u) { DB.set('nexus_users', u); }
 
 function showMsg(text, type='error') {
@@ -925,7 +932,12 @@ function register() {
   saveUsers(users);
   currentUser = u;
   DB.set('nexus_session', currentUser);
-  startApp();
+  try {
+    startApp();
+  } catch (e) {
+    console.error('startApp error:', e);
+    alert('エラー: ' + e.message);
+  }
 }
 
 function logout() {
@@ -951,6 +963,7 @@ let analyser = null;
 let volAnimId = null;
 
 function startApp() {
+  console.log('startApp called');
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'flex';
 
@@ -958,8 +971,11 @@ function startApp() {
   document.getElementById('user-avatar').textContent = currentUser[0].toUpperCase();
 
   setStatus('connecting');
+  console.log('before restoreMessagesFromStorage');
   restoreMessagesFromStorage();
+  console.log('before initPeer');
   initPeer();
+  console.log('startApp complete');
 }
 
 function initPeer() {
