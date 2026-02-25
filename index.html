@@ -102,6 +102,7 @@
     letter-spacing: 0.12em;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
@@ -385,9 +386,16 @@
 
   /* Main area */
   .main-area {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    overflow: hidden;
+  }
+
+  .main-left {
     display: flex;
     flex-direction: column;
-    padding: 1.5rem;
     gap: 1.5rem;
     overflow-y: auto;
   }
@@ -494,6 +502,188 @@
   /* Remote audio */
   audio { display: none; }
 
+  /* Messaging Panel */
+  .messaging-panel {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    gap: 0;
+  }
+
+  .msg-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  #msg-peer-select {
+    margin-left: auto;
+    padding: 0.4rem 0.6rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  #msg-peer-select:focus { border-color: var(--accent); outline: none; }
+
+  .messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .message {
+    display: flex;
+    gap: 0.5rem;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .message.self {
+    justify-content: flex-end;
+  }
+
+  .message-content {
+    max-width: 80%;
+    padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+  }
+
+  .message.other .message-content {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .message.self .message-content {
+    background: linear-gradient(135deg, var(--accent), #0099dd);
+    color: #000;
+    font-weight: 600;
+  }
+
+  .message-meta {
+    font-size: 0.7rem;
+    color: var(--muted);
+    padding: 0 0.5rem;
+  }
+
+  .message-file {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.8rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+
+  .message-file:hover {
+    border-color: var(--accent);
+    box-shadow: var(--glow);
+  }
+
+  .message-file-icon { font-size: 1.2rem; }
+  .message-file-info { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+  .message-file-name { font-weight: 600; color: var(--accent); }
+  .message-file-size { color: var(--muted); }
+
+  .msg-input-area {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .msg-text-input {
+    flex: 1;
+    padding: 0.6rem 0.9rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .msg-text-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,200,255,0.1);
+  }
+
+  .msg-btn-send,
+  .msg-btn-file {
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #0099dd);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .msg-btn-send:hover,
+  .msg-btn-file:hover {
+    box-shadow: 0 4px 12px rgba(0,200,255,0.3);
+  }
+
+  .msg-btn-send:active,
+  .msg-btn-file:active {
+    transform: translateY(1px);
+  }
+
+  .upload-progress {
+    padding: 0.8rem 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    font-size: 0.8rem;
+    background: rgba(0,200,255,0.05);
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  #progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #0099dd);
+    width: 0%;
+    transition: width 0.2s;
+  }
+
+  #progress-text {
+    min-width: 30px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
   /* Status bar */
   .status-bar {
     display: flex;
@@ -572,26 +762,12 @@
       <div class="logo-icon">📡</div>
       <span class="logo-text">NEXUS</span>
     </div>
-    <div class="auth-title">Welcome back</div>
+    <div class="auth-title">ようこそ</div>
     <div class="auth-sub">Voice chat & screen sharing platform</div>
 
-    <div class="tab-row">
-      <button class="tab-btn active" onclick="switchTab('login')">ログイン</button>
-      <button class="tab-btn" onclick="switchTab('register')">新規登録</button>
-    </div>
-
-    <div id="login-form">
-      <div class="field"><label>ユーザー名</label><input type="text" id="login-user" placeholder="username" autocomplete="username"></div>
-      <div class="field"><label>パスワード</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
-      <button class="btn btn-primary" onclick="login()">ログイン →</button>
-    </div>
-
-    <div id="register-form" style="display:none">
-      <div class="field"><label>ユーザー名</label><input type="text" id="reg-user" placeholder="username" autocomplete="username"></div>
-      <div class="field"><label>表示名</label><input type="text" id="reg-display" placeholder="表示名"></div>
-      <div class="field"><label>パスワード</label><input type="password" id="reg-pass" placeholder="••••••••" autocomplete="new-password"></div>
-      <div class="field"><label>パスワード確認</label><input type="password" id="reg-pass2" placeholder="••••••••" autocomplete="new-password"></div>
-      <button class="btn btn-primary" onclick="register()">アカウント作成 →</button>
+    <div id="register-form">
+      <div class="field"><label>ユーザーネーム</label><input type="text" id="reg-user" placeholder="your username" autocomplete="username"></div>
+      <button class="btn btn-primary" onclick="register()">開始 →</button>
     </div>
 
     <div id="auth-msg"></div>
@@ -615,7 +791,6 @@
       <div class="topbar-user">
         <div class="avatar" id="user-avatar">?</div>
         <span class="user-name" id="user-display"></span>
-        <button class="btn-logout" onclick="logout()">ログアウト</button>
       </div>
     </header>
 
@@ -651,38 +826,67 @@
     <!-- Main -->
     <main class="main-area">
 
-      <div class="controls-bar">
-        <button class="ctrl-btn" id="mic-btn" onclick="toggleMic()">
-          <span class="ctrl-icon">🎤</span> ミュート解除
-        </button>
-        <button class="ctrl-btn danger" id="deafen-btn" onclick="toggleDeafen()">
-          <span class="ctrl-icon">🔇</span> スピーカー
-        </button>
-        <button class="ctrl-btn" id="screen-btn" onclick="toggleScreenShare()">
-          <span class="ctrl-icon">🖥️</span> 画面共有
-        </button>
-        <div class="volume-meter" id="vol-meter">
-          <div class="vol-bar" style="height:3px" id="vb1"></div>
-          <div class="vol-bar" style="height:3px" id="vb2"></div>
-          <div class="vol-bar" style="height:3px" id="vb3"></div>
-          <div class="vol-bar" style="height:3px" id="vb4"></div>
-          <div class="vol-bar" style="height:3px" id="vb5"></div>
+      <div class="main-left">
+        <div class="controls-bar">
+          <button class="ctrl-btn" id="mic-btn" onclick="toggleMic()">
+            <span class="ctrl-icon">🎤</span> ミュート解除
+          </button>
+          <button class="ctrl-btn danger" id="deafen-btn" onclick="toggleDeafen()">
+            <span class="ctrl-icon">🔇</span> スピーカー
+          </button>
+          <button class="ctrl-btn" id="screen-btn" onclick="toggleScreenShare()">
+            <span class="ctrl-icon">🖥️</span> 画面共有
+          </button>
+          <div class="volume-meter" id="vol-meter">
+            <div class="vol-bar" style="height:3px" id="vb1"></div>
+            <div class="vol-bar" style="height:3px" id="vb2"></div>
+            <div class="vol-bar" style="height:3px" id="vb3"></div>
+            <div class="vol-bar" style="height:3px" id="vb4"></div>
+            <div class="vol-bar" style="height:3px" id="vb5"></div>
+          </div>
+        </div>
+
+        <div class="mute-banner" id="mute-banner">
+          🔇 マイクがミュートされています
+        </div>
+
+        <div class="screen-area" id="screen-area">
+          <div class="screen-placeholder" id="screen-placeholder">
+            <div class="ph-icon">🖥️</div>
+            <h3>画面共有なし</h3>
+            <p>「画面共有」ボタンで共有を開始するか<br>相手の共有を待ちます</p>
+          </div>
+          <video id="screen-video" autoplay muted playsinline></video>
+          <video id="remote-screen-video" autoplay playsinline></video>
+          <div class="screen-label" id="screen-label">● LIVE</div>
         </div>
       </div>
 
-      <div class="mute-banner" id="mute-banner">
-        🔇 マイクがミュートされています
-      </div>
-
-      <div class="screen-area" id="screen-area">
-        <div class="screen-placeholder" id="screen-placeholder">
-          <div class="ph-icon">🖥️</div>
-          <h3>画面共有なし</h3>
-          <p>「画面共有」ボタンで共有を開始するか<br>相手の共有を待ちます</p>
+      <div class="messaging-panel">
+        <div class="msg-header">
+          <span>チャット</span>
+          <select id="msg-peer-select" onchange="changeSelectedPeer()">
+            <option value="">すべてのメッセージ</option>
+          </select>
         </div>
-        <video id="screen-video" autoplay muted playsinline></video>
-        <video id="remote-screen-video" autoplay playsinline></video>
-        <div class="screen-label" id="screen-label">● LIVE</div>
+
+        <div class="messages-container" id="messages-container">
+          <div style="flex:1; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:0.85rem; text-align:center;">
+            いまのところメッセージはありません
+          </div>
+        </div>
+
+        <div class="msg-input-area">
+          <input type="text" id="msg-input" class="msg-text-input" placeholder="メッセージを入力..." onkeypress="handleMessageKeypress(event)">
+          <button class="msg-btn-send" onclick="sendMessage()">送信</button>
+          <button class="msg-btn-file" onclick="document.getElementById('file-input').click()">📎</button>
+          <input type="file" id="file-input" style="display:none" onchange="handleFileSelect()">
+        </div>
+
+        <div id="upload-progress" class="upload-progress" style="display:none">
+          <div class="progress-bar"><div id="progress-fill"></div></div>
+          <span id="progress-text">0%</span>
+        </div>
       </div>
 
     </main>
@@ -703,62 +907,24 @@ const DB = {
 // ─── Auth ──────────────────────────────────────────────────────────
 let currentUser = null;
 
-function getUsers() { return DB.get('nexus_users') || {}; }
+function getUsers() { return DB.get('nexus_users') || []; }
 function saveUsers(u) { DB.set('nexus_users', u); }
-
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (tab==='login')?i===0:i===1));
-  document.getElementById('login-form').style.display = tab==='login'?'':'none';
-  document.getElementById('register-form').style.display = tab==='register'?'':'none';
-  document.getElementById('auth-msg').innerHTML = '';
-}
 
 function showMsg(text, type='error') {
   document.getElementById('auth-msg').innerHTML = `<div class="msg ${type}">${text}</div>`;
 }
 
-function login() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  if (!u || !p) return showMsg('ユーザー名とパスワードを入力してください');
-  const users = getUsers();
-  if (!users[u]) return showMsg('ユーザーが見つかりません');
-  if (users[u].password !== hashPass(p)) return showMsg('パスワードが正しくありません');
-  currentUser = { username: u, display: users[u].display };
-  DB.set('nexus_session', currentUser);
-  startApp();
-}
-
 function register() {
   const u = document.getElementById('reg-user').value.trim();
-  const d = document.getElementById('reg-display').value.trim() || u;
-  const p = document.getElementById('reg-pass').value;
-  const p2 = document.getElementById('reg-pass2').value;
-  if (!u || !p) return showMsg('全フィールドを入力してください');
-  if (p !== p2) return showMsg('パスワードが一致しません');
-  if (p.length < 6) return showMsg('パスワードは6文字以上にしてください');
-  if (!/^[a-zA-Z0-9_]+$/.test(u)) return showMsg('ユーザー名は英数字とアンダーバーのみ使用可能です');
+  if (!u) return showMsg('ユーザーネームを入力してください');
+  if (!/^[a-zA-Z0-9_]+$/.test(u)) return showMsg('ユーザーネームは英数字とアンダーバーのみ使用可能です');
   const users = getUsers();
-  if (users[u]) return showMsg('このユーザー名は既に使われています');
-  users[u] = { password: hashPass(p), display: d };
+  if (users.includes(u)) return showMsg('このユーザーネームは既に使われています');
+  users.push(u);
   saveUsers(users);
-  showMsg('アカウントを作成しました！', 'success');
-  setTimeout(() => switchTab('login'), 1200);
-}
-
-function hashPass(p) {
-  // Simple hash (not for production use)
-  let h = 0;
-  for (let i = 0; i < p.length; i++) { h = Math.imul(31, h) + p.charCodeAt(i) | 0; }
-  return h.toString(16);
-}
-
-function logout() {
-  DB.del('nexus_session');
-  cleanupPeer();
-  document.getElementById('app-screen').style.display = 'none';
-  document.getElementById('auth-screen').style.display = 'flex';
-  currentUser = null;
+  currentUser = u;
+  DB.set('nexus_session', currentUser);
+  startApp();
 }
 
 // ─── WebRTC / PeerJS ───────────────────────────────────────────────
@@ -777,11 +943,11 @@ function startApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'flex';
 
-  const d = currentUser.display;
-  document.getElementById('user-display').textContent = d;
-  document.getElementById('user-avatar').textContent = d[0].toUpperCase();
+  document.getElementById('user-display').textContent = currentUser;
+  document.getElementById('user-avatar').textContent = currentUser[0].toUpperCase();
 
   setStatus('connecting');
+  restoreMessagesFromStorage();
   initPeer();
 }
 
@@ -829,14 +995,25 @@ function handleConnection(conn) {
   connections[pid].conn = conn;
 
   conn.on('open', () => {
-    conn.send({ type: 'hello', display: currentUser.display });
+    conn.send({ type: 'hello', username: currentUser });
   });
 
   conn.on('data', (data) => {
     if (data.type === 'hello') {
-      connections[pid].display = data.display;
-      addPeerUI(pid, data.display);
-      notify(`👤 ${data.display} が接続しました`, 'success');
+      connections[pid].username = data.username;
+      addPeerUI(pid, data.username);
+      updatePeerSelect();
+      notify(`👤 ${data.username} が接続しました`, 'success');
+    } else if (data.type === 'chat') {
+      data.fromId = pid;
+      receiveMessage(data);
+    } else if (data.type === 'file-request') {
+      // Receive file request
+      data.fromId = pid;
+      handleFileRequest(data);
+    } else if (data.type === 'file-chunk') {
+      data.fromId = pid;
+      receiveFileChunk(data);
     }
   });
 
@@ -897,7 +1074,7 @@ function connectToPeer() {
   connections[remoteId].conn = conn;
 
   conn.on('open', () => {
-    conn.send({ type: 'hello', display: currentUser.display });
+    conn.send({ type: 'hello', username: currentUser });
 
     // Voice call
     navigator.mediaDevices.getUserMedia({ audio: true, video: false })
@@ -919,10 +1096,20 @@ function connectToPeer() {
 
   conn.on('data', (data) => {
     if (data.type === 'hello') {
-      connections[remoteId].display = data.display;
-      addPeerUI(remoteId, data.display);
-      notify(`👤 ${data.display} と接続しました`, 'success');
+      connections[remoteId].username = data.username;
+      addPeerUI(remoteId, data.username);
+      updatePeerSelect();
+      notify(`👤 ${data.username} と接続しました`, 'success');
       document.getElementById('remote-id-input').value = '';
+    } else if (data.type === 'chat') {
+      data.fromId = remoteId;
+      receiveMessage(data);
+    } else if (data.type === 'file-request') {
+      data.fromId = remoteId;
+      handleFileRequest(data);
+    } else if (data.type === 'file-chunk') {
+      data.fromId = remoteId;
+      receiveFileChunk(data);
     }
   });
 
@@ -1128,6 +1315,7 @@ function removePeerUI(pid) {
   if (!list.children.length) {
     list.innerHTML = '<div class="empty-peers">まだ誰も接続していません</div>';
   }
+  updatePeerSelect();
 }
 
 function disconnectPeer(pid) {
@@ -1148,6 +1336,363 @@ function cleanupPeer() {
   if (audioContext) { audioContext.close(); audioContext = null; }
   if (volAnimId) { cancelAnimationFrame(volAnimId); volAnimId = null; }
   connections = {};
+}
+
+// ─── Messaging ─────────────────────────────────────────────────────────
+let messages = [];
+let currentMsgPeer = null;
+let fileTransfers = {};
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const CHUNK_SIZE = 100 * 1024; // 100KB
+
+function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const msg = {
+    type: 'chat',
+    from: currentUser,
+    timestamp: Date.now(),
+    text: text,
+    id: Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+  };
+
+  // Send to all connected peers
+  Object.keys(connections).forEach(pid => {
+    if (connections[pid].conn && connections[pid].conn.open) {
+      connections[pid].conn.send(msg);
+    }
+  });
+
+  handleLocalMessage(msg);
+  input.value = '';
+  input.focus();
+}
+
+function handleLocalMessage(msg) {
+  messages.push(msg);
+  saveMessagesToStorage();
+  addMessageToUI(msg, true);
+  scrollToBottom();
+}
+
+function receiveMessage(data) {
+  messages.push(data);
+  saveMessagesToStorage();
+  addMessageToUI(data, false);
+  scrollToBottom();
+  notify(`📨 ${data.from}: ${data.text.substring(0,30)}${data.text.length > 30 ? '...' : ''}`, 'success');
+}
+
+function addMessageToUI(msg, isSelf) {
+  if (currentMsgPeer && msg.fromId !== currentMsgPeer && !isSelf) return;
+  if (currentMsgPeer === '' && (!msg.fromId || !connections[msg.fromId])) return;
+
+  const container = document.getElementById('messages-container');
+  const empty = container.querySelector('div[style*="flex:1"]');
+  if (empty) empty.remove();
+
+  const msgEl = document.createElement('div');
+  msgEl.className = 'message ' + (isSelf ? 'self' : 'other');
+
+  const time = new Date(msg.timestamp).toLocaleTimeString('ja-JP', {hour: '2-digit', minute:'2-digit'});
+  const content = document.createElement('div');
+  content.className = 'message-content';
+  content.textContent = msg.text;
+
+  const meta = document.createElement('div');
+  meta.className = 'message-meta';
+  meta.textContent = `${isSelf ? 'あなた' : msg.from} • ${time}`;
+
+  msgEl.appendChild(content);
+  msgEl.appendChild(meta);
+  container.appendChild(msgEl);
+}
+
+function updatePeerSelect() {
+  const select = document.getElementById('msg-peer-select');
+  const currentValue = select.value;
+
+  // Remove old options except "All messages"
+  while (select.children.length > 1) {
+    select.removeChild(select.children[1]);
+  }
+
+  // Add peer options
+  Object.keys(connections).forEach(pid => {
+    const username = connections[pid].username || 'Unknown';
+    const opt = document.createElement('option');
+    opt.value = pid;
+    opt.textContent = username;
+    select.appendChild(opt);
+  });
+}
+
+function changeSelectedPeer() {
+  const select = document.getElementById('msg-peer-select');
+  currentMsgPeer = select.value || null;
+  refreshMessageContainer();
+}
+
+function refreshMessageContainer() {
+  const container = document.getElementById('messages-container');
+  container.innerHTML = '';
+
+  const filteredMsgs = currentMsgPeer === null
+    ? messages
+    : messages.filter(m => (m.from === currentUser && m.to === currentMsgPeer) ||
+                           (m.from !== currentUser && m.fromId === currentMsgPeer));
+
+  if (filteredMsgs.length === 0) {
+    container.innerHTML = '<div style="flex:1; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:0.85rem; text-align:center;">メッセージはありません</div>';
+    return;
+  }
+
+  filteredMsgs.forEach(msg => {
+    const isSelf = msg.from === currentUser;
+    addMessageToUI(msg, isSelf);
+  });
+
+  scrollToBottom();
+}
+
+function scrollToBottom() {
+  const container = document.getElementById('messages-container');
+  container.scrollTop = container.scrollHeight;
+}
+
+function handleMessageKeypress(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+}
+
+function saveMessagesToStorage() {
+  DB.set('nexus_messages', messages);
+}
+
+function restoreMessagesFromStorage() {
+  messages = DB.get('nexus_messages') || [];
+  refreshMessageContainer();
+}
+
+function handleFileSelect() {
+  const input = document.getElementById('file-input');
+  const file = input.files[0];
+  if (!file) return;
+
+  if (file.size > MAX_FILE_SIZE) {
+    notify(`❌ ファイルサイズが大きすぎます（最大100MB）`, 'error');
+    input.value = '';
+    return;
+  }
+
+  // If no peer selected, send to all
+  const targetPeers = currentMsgPeer
+    ? [currentMsgPeer]
+    : Object.keys(connections).filter(pid => connections[pid].conn && connections[pid].conn.open);
+
+  if (targetPeers.length === 0) {
+    notify('❌ 接続されたピアがありません', 'error');
+    input.value = '';
+    return;
+  }
+
+  targetPeers.forEach(pid => uploadFile(pid, file));
+  input.value = '';
+}
+
+function uploadFile(peerId, file) {
+  const reader = new FileReader();
+  const fileId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+  reader.onload = (e) => {
+    const arrayBuffer = e.target.result;
+    const chunks = [];
+    const totalChunks = Math.ceil(arrayBuffer.byteLength / CHUNK_SIZE);
+
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, arrayBuffer.byteLength);
+      chunks.push(arrayBuffer.slice(start, end));
+    }
+
+    fileTransfers[fileId] = {
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.mimeType,
+      chunks: chunks,
+      currentChunk: 0
+    };
+
+    // Send file info
+    const conn = connections[peerId].conn;
+    if (conn && conn.open) {
+      conn.send({
+        type: 'file-request',
+        fileId: fileId,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+        totalChunks: totalChunks,
+        from: currentUser,
+        fromId: peer.id
+      });
+
+      // Start sending chunks after short delay
+      setTimeout(() => sendFileChunk(peerId, fileId), 100);
+    }
+  };
+
+  reader.readAsArrayBuffer(file);
+  notify(`📤 ファイル送信開始: ${file.name}`, '');
+}
+
+function sendFileChunk(peerId, fileId) {
+  const transfer = fileTransfers[fileId];
+  if (!transfer || transfer.currentChunk >= transfer.chunks.length) {
+    return;
+  }
+
+  const conn = connections[peerId].conn;
+  if (!conn || !conn.open) return;
+
+  const chunk = transfer.chunks[transfer.currentChunk];
+  const percent = Math.round((transfer.currentChunk / transfer.chunks.length) * 100);
+
+  conn.send({
+    type: 'file-chunk',
+    fileId: fileId,
+    chunkIndex: transfer.currentChunk,
+    totalChunks: transfer.chunks.length,
+    chunkData: chunk,
+    from: currentUser
+  }, { reliable: true });
+
+  updateUploadProgress(percent);
+
+  transfer.currentChunk++;
+
+  if (transfer.currentChunk < transfer.chunks.length) {
+    setTimeout(() => sendFileChunk(peerId, fileId), 50);
+  } else {
+    setTimeout(() => {
+      notify(`✅ ファイル送信完了: ${transfer.fileName}`, 'success');
+      updateUploadProgress(0);
+      document.getElementById('upload-progress').style.display = 'none';
+      delete fileTransfers[fileId];
+    }, 200);
+  }
+}
+
+function updateUploadProgress(percent) {
+  const progress = document.getElementById('upload-progress');
+  if (percent > 0) {
+    progress.style.display = 'flex';
+    document.getElementById('progress-fill').style.width = percent + '%';
+    document.getElementById('progress-text').textContent = percent + '%';
+  }
+}
+
+function handleFileRequest(data) {
+  const fileId = data.fileId;
+  notify(`📥 ファイル受信開始: ${data.fileName} (${(data.fileSize / 1024 / 1024).toFixed(2)}MB)`, '');
+
+  fileTransfers[fileId] = {
+    fileName: data.fileName,
+    fileSize: data.fileSize,
+    mimeType: data.mimeType,
+    totalChunks: data.totalChunks,
+    chunks: [],
+    received: 0,
+    fromId: data.fromId,
+    from: data.from
+  };
+}
+
+function receiveFileChunk(data) {
+  const transfer = fileTransfers[data.fileId];
+  if (!transfer) {
+    console.warn('Unknown file transfer:', data.fileId);
+    return;
+  }
+
+  // Ensure chunks array is large enough
+  while (transfer.chunks.length <= data.chunkIndex) {
+    transfer.chunks.push(null);
+  }
+
+  transfer.chunks[data.chunkIndex] = data.chunkData;
+  transfer.received++;
+
+  const percent = Math.round((transfer.received / transfer.totalChunks) * 100);
+  updateUploadProgress(percent);
+
+  if (transfer.received === transfer.totalChunks) {
+    // All chunks received, assemble file
+    const blob = new Blob(transfer.chunks, { type: transfer.mimeType });
+    downloadFile(blob, transfer.fileName);
+
+    // Display in messages container
+    const container = document.getElementById('messages-container');
+    const empty = container.querySelector('div[style*="flex:1"]');
+    if (empty) empty.remove();
+
+    const msgEl = document.createElement('div');
+    msgEl.className = 'message other';
+
+    const fileEl = document.createElement('div');
+    fileEl.className = 'message-file';
+    fileEl.innerHTML = `
+      <div class="message-file-icon">📎</div>
+      <div class="message-file-info">
+        <div class="message-file-name">${transfer.fileName}</div>
+        <div class="message-file-size">${(transfer.fileSize / 1024 / 1024).toFixed(2)}MB</div>
+      </div>
+    `;
+    fileEl.onclick = () => downloadFile(blob, transfer.fileName);
+
+    const time = new Date().toLocaleTimeString('ja-JP', {hour: '2-digit', minute:'2-digit'});
+    const meta = document.createElement('div');
+    meta.className = 'message-meta';
+    meta.textContent = `${transfer.from} • ${time}`;
+
+    msgEl.appendChild(fileEl);
+    msgEl.appendChild(meta);
+    container.appendChild(msgEl);
+    scrollToBottom();
+
+    // Save to messages
+    messages.push({
+      type: 'file',
+      from: transfer.from,
+      fromId: transfer.fromId,
+      timestamp: Date.now(),
+      fileName: transfer.fileName,
+      fileSize: transfer.fileSize,
+      fileId: data.fileId,
+      id: data.fileId
+    });
+    saveMessagesToStorage();
+
+    notify(`✅ ファイル受信完了: ${transfer.fileName}`, 'success');
+    updateUploadProgress(0);
+    document.getElementById('upload-progress').style.display = 'none';
+    delete fileTransfers[data.fileId];
+  }
+}
+
+function downloadFile(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ─── Utilities ─────────────────────────────────────────────────────
@@ -1175,8 +1720,7 @@ function copyId() {
 // Enter key for connect
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && document.activeElement.id === 'remote-id-input') connectToPeer();
-  if (e.key === 'Enter' && document.activeElement.id === 'login-pass') login();
-  if (e.key === 'Enter' && document.activeElement.id === 'reg-pass2') register();
+  if (e.key === 'Enter' && document.activeElement.id === 'reg-user') register();
 });
 
 // ─── Init ──────────────────────────────────────────────────────────
