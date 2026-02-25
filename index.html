@@ -791,6 +791,7 @@
       <div class="topbar-user">
         <div class="avatar" id="user-avatar">?</div>
         <span class="user-name" id="user-display"></span>
+        <button class="btn-logout" onclick="logout()">ログアウト</button>
       </div>
     </header>
 
@@ -925,6 +926,16 @@ function register() {
   currentUser = u;
   DB.set('nexus_session', currentUser);
   startApp();
+}
+
+function logout() {
+  DB.del('nexus_session');
+  cleanupPeer();
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('reg-user').value = '';
+  currentUser = null;
+  messages = [];
 }
 
 // ─── WebRTC / PeerJS ───────────────────────────────────────────────
